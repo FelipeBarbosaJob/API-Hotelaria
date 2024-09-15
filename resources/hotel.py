@@ -47,36 +47,52 @@ class Hoteis(Resource):
 
 # Definição da classe Hotel, que gerencia o endpoint /hoteis/<string:hotel_id>
 class Hotel(Resource):
-    def get(self, hotel_id):
+
+    # Cria um parser para os dados do hotel
+    argumentos = reqparse.RequestParser()
+    argumentos.add_argument('nome')
+    argumentos.add_argument('estrelas')
+    argumentos.add_argument('diaria')
+    argumentos.add_argument('cidade')
+
+    def find_hotel(hotel_id): # para fazer a busca de hoteis se existe ou não
         # Busca um hotel específico pelo ID e retorna seus dados em formato JSON
         for hotel in hoteis:
             if hotel['hotel_id'] == hotel_id:
                 return hotel
+        return None
+
+    def get(self, hotel_id):
+        
+        hotel = Hotel.find_hotel(hotel_id)
+        if hotel:
+            return hotel
+
         # Retorna uma mensagem de erro se o hotel não for encontrado
         return {'message': 'Hotel não encontrado.'}, 404
 
     def post(self, hotel_id):
 
-        # Cria um parser para os dados do hotel
-        argumento = reqparse.RequestParser()
-        argumento.add_argument('nome')
-        argumento.add_argument('estrelas')
-        argumento.add_argument('diaria')
-        argumento.add_argument('cidade')
-        args = argumento.parse_args()
+        
+        dados = Hotel.argumentos.parse_args()
+        novo_hotel = { 'hotel_id': hotel_id, **dados } # Adiciona o novo hotel à lista
 
-        # Adiciona o novo hotel à lista
-        novo_hotel = {
-            'hotel_id': hotel_id,
-            'nome': args['nome'],
-            'estrelas': args['estrelas'],
-            'diaria': args['diaria'],
-            'cidade': args['cidade']
-        }
-        hoteis.append(novo_hotel)
-        return novo_hotel, 201
+        hoteis.append(novo_hotel) #append = adicionar um novo elemento a lista
+        return novo_hotel, 200
+    
     def put(self, hotel_id):
-        pass
+
+        dados = Hotel.argumentos.parse_args()
+        novo_hotel = { 'hotel_id': hotel_id, **dados }
+
+        hotel = Hotel.find_hotel(hotel_id)
+        if hotel: #atualiza um hotel existente
+            hotel.update(novo_hotel)
+            return novo_hotel, 200
+        
+        hoteis.append(novo_hotel) #cria um novo hotel
+        return novo_hotel,201
+
 
     def delete(self, hotel_id):
         pass
