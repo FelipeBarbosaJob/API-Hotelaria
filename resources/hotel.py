@@ -1,4 +1,4 @@
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 
 # Lista de hotéis em formato JSON
 hoteis = [
@@ -39,28 +39,44 @@ hoteis = [
     }
 ]
 
-# Definição da classe Hoteis, que irá gerenciar o endpoint /hoteis
-class Hoteis(Resource): 
+# Definição da classe Hoteis, que gerencia o endpoint /hoteis
+class Hoteis(Resource):
     def get(self):
-        # Retorna a lista de hotéis em formato JSON
+        # Retorna a lista de todos os hotéis em formato JSON
         return {'hoteis': hoteis}
-    
-class Hotel(Resource):
 
+# Definição da classe Hotel, que gerencia o endpoint /hoteis/<string:hotel_id>
+class Hotel(Resource):
     def get(self, hotel_id):
+        # Busca um hotel específico pelo ID e retorna seus dados em formato JSON
         for hotel in hoteis:
             if hotel['hotel_id'] == hotel_id:
                 return hotel
-        return {'message': 'Hotel não encontrado.'},404
-    
+        # Retorna uma mensagem de erro se o hotel não for encontrado
+        return {'message': 'Hotel não encontrado.'}, 404
+
     def post(self, hotel_id):
-        pass
+
+        # Cria um parser para os dados do hotel
+        argumento = reqparse.RequestParser()
+        argumento.add_argument('nome')
+        argumento.add_argument('estrelas')
+        argumento.add_argument('diaria')
+        argumento.add_argument('cidade')
+        args = argumento.parse_args()
+
+        # Adiciona o novo hotel à lista
+        novo_hotel = {
+            'hotel_id': hotel_id,
+            'nome': args['nome'],
+            'estrelas': args['estrelas'],
+            'diaria': args['diaria'],
+            'cidade': args['cidade']
+        }
+        hoteis.append(novo_hotel)
+        return novo_hotel, 201
     def put(self, hotel_id):
         pass
+
     def delete(self, hotel_id):
         pass
-    
-    
-    
-    
-    
