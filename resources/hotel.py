@@ -1,4 +1,5 @@
 from flask_restful import Resource, reqparse
+from models.hotel import HotelModel
 
 # Lista de hotéis em formato JSON. Aqui simulamos um banco de dados de hotéis com algumas entradas iniciais.
 hoteis = [
@@ -38,6 +39,8 @@ hoteis = [
         "cidade": "Belo Horizonte"
     }
 ]
+
+
 
 # Classe 'Hoteis', que gerencia o endpoint /hoteis e retorna a lista de todos os hotéis.
 class Hoteis(Resource):
@@ -84,7 +87,8 @@ class Hotel(Resource):
             return {'message': 'Hotel hotel já existe.'}, 404
         # Faz o parsing dos argumentos recebidos e cria um novo dicionário 'novo_hotel'.
         dados = Hotel.argumentos.parse_args()
-        novo_hotel = { 'hotel_id': hotel_id, **dados } # Adiciona o novo hotel à lista com o 'hotel_id' fornecido
+        hotel_objeto = HotelModel(hotel_id, **dados)
+        novo_hotel = hotel_objeto.json()
 
         # Adiciona o novo hotel à lista de hotéis.
         hoteis.append(novo_hotel)
@@ -96,7 +100,8 @@ class Hotel(Resource):
     def put(self, hotel_id):
         # Faz o parsing dos argumentos recebidos e cria um dicionário 'novo_hotel' com os dados.
         dados = Hotel.argumentos.parse_args()
-        novo_hotel = { 'hotel_id': hotel_id, **dados }
+        hotel_objeto = HotelModel(hotel_id, **dados)
+        novo_hotel = hotel_objeto.json()
 
         # Procura o hotel pelo 'hotel_id'.
         hotel = Hotel.find_hotel(hotel_id)
@@ -104,11 +109,9 @@ class Hotel(Resource):
             hotel.update(novo_hotel)  # O método update substitui os valores existentes pelos novos dados.
             return novo_hotel, 200  # Retorna o hotel atualizado com status 200 (OK).
         
-        # Se o hotel não for encontrado, adiciona um novo hotel à lista de hotéis.
-        hoteis.append(novo_hotel)
-        
-        # Retorna o novo hotel criado com status 201 (Created).
-        return novo_hotel, 201
+        else:
+            hoteis.append(novo_hotel)# Se o hotel não for encontrado, adiciona um novo hotel à lista de hotéis.
+            return novo_hotel, 201# Retorna o novo hotel criado com status 201 (Created).
 
     def delete(self, hotel_id):
         # Busca o hotel pelo ID para verificar se ele existe
@@ -116,7 +119,7 @@ class Hotel(Resource):
         
         # Se o hotel não for encontrado, retorna um erro
         if hotel is None:
-            return {'message': 'Hotel not found.'}, 404
+            return {'message': 'Hotel não existe.'}, 404
         
         # Remove o hotel da lista filtrando por IDs diferentes do ID passado
         hoteis[:] = [hotel for hotel in hoteis if hotel['hotel_id'] != hotel_id] 

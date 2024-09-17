@@ -1,21 +1,25 @@
 from flask import Flask
 from flask_restful import Api
-from resources.hotel import Hoteis, Hotel  # Importa os recursos Hoteis e Hotel do módulo resources.hotel
-
-app = Flask(__name__) # Criação da instância do aplicativo Flask
-
-api = Api(app) # Criação da instância da API Flask-RESTful
-
-
-api.add_resource(Hoteis, '/hoteis') # Associa a classe Hoteis ao endpoint /hoteis
-
-api.add_resource(Hotel, '/hoteis/<string:hotel_id>')# Associa a classe Hotel ao endpoint /hoteis/<string:hotel_id>
-                                                    # Esse endpoint permite acessar informações de um hotel específico por ID
+from resources.hotel import Hoteis, Hotel  
+from sql_alchemy import banco
+app = Flask(__name__) 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/felip/OneDrive/Documentos/Projetos/REST_API/banco.db'
+app.config[ 'SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+api = Api(app) 
 
 
-if __name__ == '__main__': # Executa o aplicativo Flask apenas se o script for executado diretamente
+api.add_resource(Hoteis, '/hoteis')
 
-    app.run(debug=True)  # Executa o servidor Flask em modo de depuração
+api.add_resource(Hotel, '/hoteis/<string:hotel_id>')
+
+
+if __name__ == '__main__': 
+    
+    banco.init_app(app)
+    with app.app_context():
+        banco.create_all()
+
+    app.run(debug=True)  
 
     # O servidor pode ser acessado em http://127.0.0.1:5000/hoteis
 
