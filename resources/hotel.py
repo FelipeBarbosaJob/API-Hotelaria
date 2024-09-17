@@ -84,7 +84,7 @@ class Hotel(Resource):
         hotel = Hotel.find_hotel(hotel_id)
         if hotel:
         # Se o hotel for encontrado, retorna seus dados no formato JSON.
-            return {'message': 'Hotel hotel já existe.'}, 404
+            return {'message': 'Hotel id {} já existe.'.format(hotel_id)}, 400
         # Faz o parsing dos argumentos recebidos e cria um novo dicionário 'novo_hotel'.
         dados = Hotel.argumentos.parse_args()
         hotel_objeto = HotelModel(hotel_id, **dados)
